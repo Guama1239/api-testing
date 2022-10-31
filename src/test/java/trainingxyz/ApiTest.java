@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.replaceFiltersWith;
+import static org.hamcrest.Matchers.equalTo;
 
 public class ApiTest {
 // I had problems with localhost because the instructor uses a macbook and port 8888 for first
@@ -28,7 +29,12 @@ public class ApiTest {
                         //then().log().body();
                     then(). // Section 3 of the course added 2 the lines of code beyond the then();
                     assertThat().
-                        statusCode(200);
+                        statusCode(200).body("id", equalTo("2")).
+                        body("name", equalTo("Cross-Back Training Tank")).
+                        body("description", equalTo("The most awesome phone of 2013!")).
+                        body("price", equalTo("299.00")).
+                        body("category_id", equalTo("2")).
+                        body("category_name", equalTo("Active Wear - Women"));
         //response.log().body();
     }
 
