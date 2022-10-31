@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.replaceFiltersWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class ApiTest {
@@ -143,7 +144,87 @@ public class ApiTest {
                 .body("records.description", everyItem(notNullValue()))
                 .body("records.price", everyItem(notNullValue()))
                 .body("records.category_id", everyItem(notNullValue()))
-                .body("records.category_name", everyItem(notNullValue()));
+                .body("records.category_name", everyItem(notNullValue()))
+                .body("records.id[0]", equalTo("1004")); //this line lets you work with indices of the array
+    }
+
+    @Test
+    public void getProductsHeaders(){
+        // the two initial lines of code retrieve a Json array of products
+//        String endpoint = "http://localhost:80/api_testing/product/read.php";
+//        given().when().get(endpoint).then().log().body()
+        String endpoint = "http://localhost:80/api_testing/product/read.php";
+        given()
+                .when()
+                .get(endpoint)
+                .then()
+                .log()
+                .headers()
+                .assertThat()
+                .statusCode(200)
+                .header("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .body("records.size()", greaterThan(0))
+                .body("records.id", everyItem(notNullValue()))
+                .body("records.name", everyItem(notNullValue()))
+                .body("records.description", everyItem(notNullValue()))
+                .body("records.price", everyItem(notNullValue()))
+                .body("records.category_id", everyItem(notNullValue()))
+                .body("records.category_name", everyItem(notNullValue()))
+                .body("records.id[0]", equalTo("1004")); //this line lets you work with indices of the array
+    }
+
+    @Test
+    public void getDeserializedProduct(){
+        String endpoint = "http://localhost:80/api_testing/product/read_one.php";
+        Product expectedProduct = new Product(2, "Cross-Back Training Tank", "The most awesome phone of 2013!", 299.00, 2, "Active Wear - Women");
+
+        Product actualProduct = given()
+                .queryParam("id", "2")
+                .when()
+                .get(endpoint)
+                .as(Product.class);// as(specified the java class that your want to deserialize the object
+        assertThat(actualProduct, samePropertyValuesAs(expectedProduct));
+    }
+
+    @Test
+    public void verifyChallenge(){ // my attempt which is ok cause I am learning :)
+        String endpoint = "http://localhost:80/api_testing/product/read.php";
+        given()
+                .when()
+                .get(endpoint)
+                .then()
+                .log()
+                .headers()
+                .assertThat()
+                .statusCode(200)
+                .header("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .body("records.size()", greaterThan(0))
+                .body("records.id", everyItem(notNullValue()))
+                .body("records.name", everyItem(notNullValue()))
+                .body("records.description", everyItem(notNullValue()))
+                .body("records.price", everyItem(notNullValue()))
+                .body("records.category_id", everyItem(notNullValue()))
+                .body("records.category_name", everyItem(notNullValue()))
+                .body("records.id[4]", equalTo("18"));
+    }
+
+    @Test
+    public void getMultiVitamins(){// Instructor approach, which is much better than mine :(
+        String endpoint = "http://localhost:80/api_testing/product/read_one.php";
+        given()
+                .queryParam("id", 18)
+                .when()
+                .get(endpoint)
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .header("Content-Type", equalTo("application/json"))
+                .body("id", equalTo("18"))
+                .body("name", equalTo("Multi-Vitamin (90 capsules)"))
+                .body("description", equalTo("A daily dose of our Multi-Vitamins fulfills a day’s nutritional needs for over 12 vitamins and minerals."))
+                .body("price", equalTo("10.00"))
+                .body("category_id", equalTo("4"))
+                .body("category-name", equalTo("Supplements"));
     }
 
 }
