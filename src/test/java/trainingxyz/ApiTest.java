@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.replaceFiltersWith;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 
 public class ApiTest {
 // I had problems with localhost because the instructor uses a macbook and port 8888 for first
@@ -121,6 +121,29 @@ public class ApiTest {
         var response2 = given().body(body).when().delete(endpoint).then();
 
         response2.log().body();
+    }
+
+    @Test
+    public void getProducts(){
+        // the two initial lines of code retrieve a Json array of products
+//        String endpoint = "http://localhost:80/api_testing/product/read.php";
+//        given().when().get(endpoint).then().log().body()
+        String endpoint = "http://localhost:80/api_testing/product/read.php";
+        given()
+                .when()
+                .get(endpoint)
+                .then()
+                .log()
+                .body()
+                .assertThat()
+                .statusCode(200)
+                .body("records.size()", greaterThan(0))
+                .body("records.id", everyItem(notNullValue()))
+                .body("records.name", everyItem(notNullValue()))
+                .body("records.description", everyItem(notNullValue()))
+                .body("records.price", everyItem(notNullValue()))
+                .body("records.category_id", everyItem(notNullValue()))
+                .body("records.category_name", everyItem(notNullValue()));
     }
 
 }
